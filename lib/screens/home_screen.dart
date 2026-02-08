@@ -4,7 +4,6 @@ import '../services/user_session.dart';
 import '../theme/app_theme.dart';
 import '../utils/page_transitions.dart';
 import '../widgets/department_card.dart';
-import '../widgets/logo.dart';
 import 'faculty_proposals_screen.dart';
 import 'department_proposals_screen.dart'; // Added
 import 'student_requests_screen.dart'; // Added
@@ -141,12 +140,6 @@ class _HomeScreenState extends State<HomeScreen>
               child: CustomScrollView(
                 slivers: [
                   // Header
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                      child: const Logo(size: 28),
-                    ),
-                  ),
                   SliverToBoxAdapter(
                     child: _buildHeader(isWideScreen, isTablet),
                   ),

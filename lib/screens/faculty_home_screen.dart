@@ -5,7 +5,6 @@ import '../services/user_session.dart';
 import '../theme/app_theme.dart';
 import '../widgets/proposal_card.dart';
 import '../widgets/proposal_detail_dialog.dart';
-import '../widgets/logo.dart';
 import 'create_proposal_screen.dart';
 import 'edit_profile_screen.dart';
 import 'login_screen.dart';
@@ -179,12 +178,6 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen>
               child: CustomScrollView(
                 slivers: [
                   // Custom App Bar
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                      child: const Logo(size: 28),
-                    ),
-                  ),
                   SliverToBoxAdapter(
                     child: _buildHeader(isWideScreen, isTablet),
                   ),
