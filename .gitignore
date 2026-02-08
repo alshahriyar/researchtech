@@ -1,0 +1,60 @@
+# Flutter
+/build/
+/android/.gradle/
+/android/app/debug/
+/android/app/profile/
+/android/app/release/
+**/flutter_export_environment.sh
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+*.iml
+*.log
+build/
+
+# Xcode
+/ios/Flutter/Flutter.framework
+/ios/Flutter/Flutter.podspec
+/ios/Flutter/Generated.xcconfig
+/ios/Flutter/ephemeral
+/ios/Flutter/app.flx
+/ios/Flutter/app.zip
+/ios/Flutter/flutter_assets/
+/ios/Flutter/flutter_export_environment.sh
+/ios/ServiceDefinitions.json
+/ios/Runner.xcworkspace/xcshareddata/
+/ios/Pods/
+
+# macOS
+/macos/Flutter/ephemeral
+/macos/Flutter/Flutter-Debug.xcconfig
+/macos/Flutter/Flutter-Release.xcconfig
+/macos/Flutter/Flutter-Profile.xcconfig
+/macos/Flutter/GeneratedPluginRegistrant.swift
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Miscellaneous
+*.class
+*.lock
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# Web
+/web/flutter_service_worker.js
+/web/flutter.js
+
+# Supabase setup script (not needed in repo)
+supabase_setup.sql
