@@ -8,6 +8,7 @@ import 'faculty_home_screen.dart';
 import 'pending_verification_screen.dart';
 import 'student_registration_screen.dart';
 import 'faculty_registration_screen.dart';
+import '../widgets/logo.dart';
 
 /// Login Screen - Entry point for user authentication.
 /// Premium design with responsive layout and subtle animations.
@@ -313,22 +314,17 @@ class _LoginScreenState extends State<LoginScreen>
                                 width: 2,
                               ),
                             ),
-                            child: const Icon(
-                              Icons.science_outlined,
-                              size: 56,
-                              color: Colors.white,
+                            child: const Padding(
+                              padding: EdgeInsets.all(24.0),
+                              child: Logo(
+                                size: 64,
+                                showText: false,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 32),
-                          const Text(
-                            'ResearchTech',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 42,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1,
-                            ),
-                          ),
+                          const Logo(size: 42, color: Colors.white),
                           const SizedBox(height: 16),
                           Text(
                             'Bridging Faculty Research\n& Student Interest',
@@ -443,20 +439,15 @@ class _LoginScreenState extends State<LoginScreen>
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.science_outlined,
-                    size: 48,
+                  child: const Logo(
+                    size: 64,
+                    showText: false,
                     color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: AppTheme.spacingLg),
-                Text(
-                  'Welcome Back',
-                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: AppTheme.spacingXs),
+                const Logo(size: 32),
+                const SizedBox(height: AppTheme.spacingSm),
                 Text(
                   'Sign in to continue',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
