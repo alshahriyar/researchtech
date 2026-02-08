@@ -8,6 +8,7 @@ import '../widgets/proposal_detail_dialog.dart';
 import 'create_proposal_screen.dart';
 import 'edit_profile_screen.dart';
 import 'login_screen.dart';
+import 'faculty_requests_screen.dart';
 
 /// Faculty Home Screen
 /// Premium dashboard with elegant design, responsive layout, and refined aesthetics.
@@ -227,7 +228,7 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen>
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.primary.withValues(alpha: 0.25),
+                    color: AppTheme.primary.withOpacity(0.25),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -280,7 +281,11 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen>
             ),
             const SizedBox(width: 12),
           ],
-          _buildIconButton(Icons.person_outline_rounded, _editProfile),
+          _buildIconButton(Icons.notifications_outlined, () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const FacultyRequestsScreen()),
+            );
+          }),
           const SizedBox(width: 8),
           _buildIconButton(Icons.logout_rounded, _logout),
         ],

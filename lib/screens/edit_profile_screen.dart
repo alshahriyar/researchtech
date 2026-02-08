@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../data/dummy_data_provider.dart';
-import '../models/teacher.dart';
+import '../services/supabase_service.dart';
 import '../services/user_session.dart';
 import '../theme/app_theme.dart';
+import '../models/teacher.dart';
 
 /// Edit Profile Screen
 /// Allows users to edit their profile information.
@@ -18,6 +18,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _nameController = TextEditingController();
   final _departmentController = TextEditingController();
   final _initialsController = TextEditingController();
+  final _researchInterestController = TextEditingController();
   final _additionalDesignationController = TextEditingController();
   final _experienceController = TextEditingController();
 
@@ -32,6 +33,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String? _nameError;
   String? _departmentError;
   String? _initialsError;
+  String? _researchInterestError;
   String? _designationError;
   String? _experienceError;
 
@@ -44,6 +46,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _loadUserProfile() async {
     final session = await UserSession.getInstance();
 
+    // Fetch teacher data if applicable
+    Teacher? teacher;
+    if (session.isTeacher) {
+      teacher = await SupabaseService.getTeacherById(session.userId);
+    }
+
     if (mounted) {
       setState(() {
         _userId = session.userId;
@@ -51,12 +59,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _isTeacher = session.isTeacher;
         _nameController.text = session.userName;
         _selectedDepartment = session.userDepartment;
+
         if (_isTeacher) {
           _initialsController.text = session.userInitials;
           // Load faculty-specific fields
-          final teacher = DummyDataProvider.getTeacherById(_userId);
           if (teacher != null) {
             _selectedDesignation = teacher.designation;
+            _researchInterestController.text = teacher.researchInterest;
             _additionalDesignationController.text =
                 teacher.additionalDesignation;
             _experienceController.text = teacher.experienceYears.toString();
@@ -72,6 +81,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _nameController.dispose();
     _departmentController.dispose();
     _initialsController.dispose();
+    _researchInterestController.dispose();
     _additionalDesignationController.dispose();
     _experienceController.dispose();
     super.dispose();
@@ -140,19 +150,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (_isTeacher) {
         final experienceYears = int.tryParse(experienceText) ?? 0;
+        final researchInterest = _researchInterestController.text.trim();
 
-        // Update teacher in DummyDataProvider
-        final success = DummyDataProvider.updateTeacher(
-          _userId,
+        // Update teacher in Supabase
+        final success = await SupabaseService.updateTeacher(
           name: name,
           initials: initials,
           department: _selectedDepartment!,
           designation: _selectedDesignation,
+          researchInterest: researchInterest,
           additionalDesignation: _additionalDesignationController.text.trim(),
           experienceYears: experienceYears,
         );
 
         if (success) {
+          // Update local session
           await session.saveTeacherSession(
             teacherId: _userId,
             email: _userEmail,
@@ -162,9 +174,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           );
         }
       } else {
-        // Update student in DummyDataProvider
-        final success = DummyDataProvider.updateStudent(
-          _userEmail,
+        // Update student in Supabase
+        final success = await SupabaseService.updateStudent(
           name: name,
           department: _selectedDepartment!,
         );
@@ -337,7 +348,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         prefixIcon: const Icon(Icons.business),
                         errorText: _departmentError,
                       ),
-                      items: DummyDataProvider.departments
+                      items: SupabaseService.departments
                           .map(
                             (dept) => DropdownMenuItem(
                               value: dept,
@@ -392,6 +403,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           helperText:
                               'Optional - add any additional title or role',
                         ),
+                      ),
+                      const SizedBox(height: AppTheme.spacingMd),
+
+                      // Research Interest
+                      TextField(
+                        controller: _researchInterestController,
+                        textCapitalization: TextCapitalization.sentences,
+                        decoration: InputDecoration(
+                          labelText: 'Research Interest / Focus',
+                          prefixIcon: const Icon(Icons.psychology),
+                          hintText: 'e.g., Machine Learning, Network Security',
+                          errorText: _researchInterestError,
+                        ),
+                        onChanged: (_) =>
+                            setState(() => _researchInterestError = null),
                       ),
                       const SizedBox(height: AppTheme.spacingMd),
 

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/faculty.dart';
 import '../services/user_session.dart';
+import '../services/supabase_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/page_transitions.dart'; // Add this
+import '../screens/faculty_proposals_screen.dart'; // Add this for navigation
 
 /// Premium Route for Faculty Detail with Smooth Animation
 class FacultyDetailRoute extends PageRouteBuilder {
@@ -128,7 +131,7 @@ class _FacultyDetailPageState extends State<FacultyDetailPage>
     Navigator.of(context).pop();
   }
 
-  void _submitInterest() {
+  Future<void> _submitInterest() async {
     final description = _descriptionController.text.trim();
 
     if (description.isEmpty) {
@@ -146,8 +149,15 @@ class _FacultyDetailPageState extends State<FacultyDetailPage>
 
     setState(() => _isSubmitting = true);
 
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (mounted) {
+    try {
+      final success = await SupabaseService.createRequest(
+        teacherId: widget.faculty.id,
+        description: description,
+      );
+
+      if (!mounted) return;
+
+      if (success) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -170,8 +180,20 @@ class _FacultyDetailPageState extends State<FacultyDetailPage>
             margin: const EdgeInsets.all(16),
           ),
         );
+      } else {
+        setState(() {
+          _isSubmitting = false;
+          _descriptionError = 'Failed to send request. Please try again.';
+        });
       }
-    });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+          _descriptionError = 'An error occurred. Please try again.';
+        });
+      }
+    }
   }
 
   @override
@@ -421,6 +443,68 @@ class _FacultyDetailPageState extends State<FacultyDetailPage>
         ),
         const SizedBox(height: 12),
         _buildInfoCard('Email', widget.faculty.email, Icons.email_outlined),
+        const SizedBox(height: 20),
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: OutlinedButton.icon(
+            onPressed: () {
+              // Navigate to proposals screen
+              Navigator.of(context).push(
+                SmoothPageRoute(
+                  page: FacultyProposalsScreen(
+                    facultyId: widget.faculty.id,
+                    facultyName: widget.faculty.name,
+                    facultyInitials: _getInitials(widget.faculty.name),
+                  ),
+                ),
+              );
+            },
+            icon: Icon(Icons.list_alt_rounded, size: 20),
+            label: Text(
+              'View Research Proposals',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.primary,
+              side: BorderSide(color: AppTheme.primary.withAlpha(100)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: OutlinedButton.icon(
+            onPressed: () {
+              // Navigate to proposals screen
+              Navigator.of(context).push(
+                SmoothPageRoute(
+                  page: FacultyProposalsScreen(
+                    facultyId: widget.faculty.id,
+                    facultyName: widget.faculty.name,
+                    facultyInitials: _getInitials(widget.faculty.name),
+                  ),
+                ),
+              );
+            },
+            icon: Icon(Icons.list_alt_rounded, size: 20),
+            label: Text(
+              'View Research Proposals',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.primary,
+              side: BorderSide(color: AppTheme.primary.withAlpha(100)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

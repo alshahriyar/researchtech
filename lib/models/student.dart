@@ -1,6 +1,7 @@
 /// Student data model representing a registered student user.
 /// Student ID and varsity email are immutable after registration.
 class Student {
+  final String authUserId; // Supabase Auth User ID
   final String studentId;
   final String varsityEmail;
   String name;
@@ -11,6 +12,7 @@ class Student {
   bool isVerified;
 
   Student({
+    required this.authUserId,
     required this.studentId,
     required this.varsityEmail,
     required this.name,
@@ -29,6 +31,7 @@ class Student {
   /// Create Student from Supabase JSON response
   factory Student.fromJson(Map<String, dynamic> json) {
     return Student(
+      authUserId: json['auth_user_id'] ?? '',
       studentId: json['student_id'] ?? '',
       varsityEmail: json['varsity_email'] ?? '',
       name: json['name'] ?? '',
@@ -43,6 +46,7 @@ class Student {
   /// Convert to JSON for Supabase insert/update
   Map<String, dynamic> toJson() {
     return {
+      'auth_user_id': authUserId,
       'student_id': studentId,
       'varsity_email': varsityEmail.toLowerCase(),
       'name': name,

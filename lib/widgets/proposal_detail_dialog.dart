@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/proposal.dart';
 import '../services/user_session.dart';
+import '../services/supabase_service.dart'; // Add this
 import '../theme/app_theme.dart';
 
 /// Premium Route for Proposal Detail with Smooth Animation
@@ -84,6 +85,7 @@ class _ProposalDetailPageState extends State<ProposalDetailPage>
     with SingleTickerProviderStateMixin {
   final _descriptionController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _emailController = TextEditingController(); // Add this
 
   late AnimationController _contentController;
   late Animation<double> _contentFade;
@@ -92,6 +94,7 @@ class _ProposalDetailPageState extends State<ProposalDetailPage>
   String _studentId = '';
   String _varsityEmail = '';
   String _studentName = '';
+  String _studentDepartment = ''; // Add this
   String? _descriptionError;
   bool _isSubmitting = false;
   bool _showInterestForm = false;
@@ -131,6 +134,7 @@ class _ProposalDetailPageState extends State<ProposalDetailPage>
           _studentId = session.userId;
           _varsityEmail = session.userEmail;
           _studentName = session.userName;
+          _studentDepartment = session.userDepartment; // Add this
         });
       }
     } catch (e) {
@@ -142,6 +146,7 @@ class _ProposalDetailPageState extends State<ProposalDetailPage>
   void dispose() {
     _descriptionController.dispose();
     _phoneController.dispose();
+    _emailController.dispose(); // Add this
     _contentController.dispose();
     super.dispose();
   }
@@ -150,7 +155,7 @@ class _ProposalDetailPageState extends State<ProposalDetailPage>
     Navigator.of(context).pop();
   }
 
-  void _submitInterest() {
+  Future<void> _submitInterest() async {
     final description = _descriptionController.text.trim();
 
     if (description.isEmpty) {
@@ -168,8 +173,27 @@ class _ProposalDetailPageState extends State<ProposalDetailPage>
 
     setState(() => _isSubmitting = true);
 
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (mounted) {
+    try {
+      // Update student profile with contact info
+      // Update student profile with contact info
+      await SupabaseService.updateStudent(
+        name: _studentName,
+        department: _studentDepartment,
+        extraPhone: _phoneController.text.trim(),
+        extraEmail: _emailController.text.trim(),
+      );
+
+      // Append proposal info to description for context
+      final fullDescription = 'Re: ${widget.proposal.title}\n\n$description';
+
+      final success = await SupabaseService.createRequest(
+        teacherId: widget.proposal.facultyId,
+        description: fullDescription,
+      );
+
+      if (!mounted) return;
+
+      if (success) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -194,8 +218,20 @@ class _ProposalDetailPageState extends State<ProposalDetailPage>
             margin: const EdgeInsets.all(16),
           ),
         );
+      } else {
+        setState(() {
+          _isSubmitting = false;
+          _descriptionError = 'Failed to send request. Please try again.';
+        });
       }
-    });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+          _descriptionError = 'An error occurred. Please try again.';
+        });
+      }
+    }
   }
 
   String _formatDate(int timestamp) {
@@ -589,6 +625,14 @@ class _ProposalDetailPageState extends State<ProposalDetailPage>
             hint: 'Optional contact number',
             icon: Icons.phone_outlined,
             keyboardType: TextInputType.phone,
+          ),
+          const SizedBox(height: 16),
+          _buildInputField(
+            controller: _emailController,
+            label: 'Alternative Email',
+            hint: 'Optional email address',
+            icon: Icons.email_outlined,
+            keyboardType: TextInputType.emailAddress,
           ),
           const SizedBox(height: 16),
           _buildInputField(

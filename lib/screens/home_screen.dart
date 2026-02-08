@@ -4,8 +4,9 @@ import '../services/user_session.dart';
 import '../theme/app_theme.dart';
 import '../utils/page_transitions.dart';
 import '../widgets/department_card.dart';
-import 'faculty_list_screen.dart';
 import 'faculty_proposals_screen.dart';
+import 'department_proposals_screen.dart'; // Added
+import 'student_requests_screen.dart'; // Added
 import 'edit_profile_screen.dart';
 import 'login_screen.dart';
 
@@ -118,9 +119,9 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _navigateToFacultyList(String department) {
-    Navigator.of(
-      context,
-    ).push(SmoothPageRoute(page: FacultyListScreen(department: department)));
+    Navigator.of(context).push(
+      SmoothPageRoute(page: DepartmentProposalsScreen(department: department)),
+    );
   }
 
   @override
@@ -231,6 +232,12 @@ class _HomeScreenState extends State<HomeScreen>
           ),
           // Action buttons
           _buildIconButton(Icons.person_outline_rounded, _editProfile),
+          const SizedBox(width: 8),
+          _buildIconButton(Icons.notifications_outlined, () {
+            Navigator.of(
+              context,
+            ).push(SmoothPageRoute(page: const StudentRequestsScreen()));
+          }),
           const SizedBox(width: 8),
           _buildIconButton(Icons.logout_rounded, _logout),
         ],

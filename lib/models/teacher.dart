@@ -1,5 +1,6 @@
 /// Teacher/Faculty data model representing a registered faculty user.
 class Teacher {
+  final String authUserId; // Supabase Auth User ID
   final String teacherId;
   String email;
   String name;
@@ -7,10 +8,12 @@ class Teacher {
   String department;
   String initials;
   String designation;
+  String researchInterest; // Primary research area/focus
   String additionalDesignation; // Optional additional designation details
   int experienceYears;
 
   Teacher({
+    required this.authUserId,
     required this.teacherId,
     required this.email,
     required this.name,
@@ -18,6 +21,7 @@ class Teacher {
     required this.department,
     required String initials,
     this.designation = 'Lecturer',
+    this.researchInterest = 'General Research',
     this.additionalDesignation = '',
     this.experienceYears = 0,
   }) : initials = initials.toUpperCase();
@@ -40,6 +44,7 @@ class Teacher {
   /// Create Teacher from Supabase JSON response
   factory Teacher.fromJson(Map<String, dynamic> json) {
     return Teacher(
+      authUserId: json['auth_user_id'] ?? '',
       teacherId: json['teacher_id'] ?? '',
       email: json['email'] ?? '',
       name: json['name'] ?? '',
@@ -47,6 +52,7 @@ class Teacher {
       department: json['department'] ?? '',
       initials: json['initials'] ?? '',
       designation: json['designation'] ?? 'Lecturer',
+      researchInterest: json['research_interest'] ?? 'General Research',
       additionalDesignation: json['additional_designation'] ?? '',
       experienceYears: json['experience_years'] ?? 0,
     );
@@ -61,6 +67,7 @@ class Teacher {
       'department': department,
       'initials': initials.toUpperCase(),
       'designation': designation,
+      'research_interest': researchInterest,
       'additional_designation': additionalDesignation,
       'experience_years': experienceYears,
     };

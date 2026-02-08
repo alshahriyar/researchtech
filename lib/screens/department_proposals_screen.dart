@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
-
-import '../models/faculty.dart';
+import '../models/proposal.dart';
 import '../theme/app_theme.dart';
-import '../widgets/faculty_card.dart';
-import '../widgets/faculty_detail_dialog.dart';
+import '../widgets/proposal_card.dart';
+import '../widgets/proposal_detail_dialog.dart';
 import '../services/supabase_service.dart';
 
-/// Faculty List Screen with Premium Design and Entrance Animation
-class FacultyListScreen extends StatefulWidget {
+/// Department Proposals Screen
+/// Replaces FacultyListScreen to show proposals directly as requested.
+class DepartmentProposalsScreen extends StatefulWidget {
   final String department;
 
-  const FacultyListScreen({super.key, required this.department});
+  const DepartmentProposalsScreen({super.key, required this.department});
 
   @override
-  State<FacultyListScreen> createState() => _FacultyListScreenState();
+  State<DepartmentProposalsScreen> createState() =>
+      _DepartmentProposalsScreenState();
 }
 
-class _FacultyListScreenState extends State<FacultyListScreen>
+class _DepartmentProposalsScreenState extends State<DepartmentProposalsScreen>
     with SingleTickerProviderStateMixin {
-  List<Faculty> _facultyList = [];
+  List<Proposal> _proposals = [];
   bool _isLoading = true;
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -39,7 +40,7 @@ class _FacultyListScreenState extends State<FacultyListScreen>
         Tween<Offset>(begin: const Offset(0, 0.03), end: Offset.zero).animate(
           CurvedAnimation(parent: _fadeController, curve: Curves.easeOutCubic),
         );
-    _loadFaculty();
+    _loadProposals();
   }
 
   @override
@@ -48,29 +49,15 @@ class _FacultyListScreenState extends State<FacultyListScreen>
     super.dispose();
   }
 
-  Future<void> _loadFaculty() async {
+  Future<void> _loadProposals() async {
     try {
-      final teachers = await SupabaseService.getTeachersByDepartment(
+      final proposals = await SupabaseService.getProposalsByDepartment(
         widget.department,
       );
 
-      // Convert Teacher models to Faculty view models
-      final facultyList = teachers.map((teacher) {
-        return Faculty(
-          id: teacher.teacherId,
-          name: teacher.name,
-          designation: teacher.fullDesignation,
-          department: teacher.department,
-          yearsExperience: teacher.experienceYears,
-          researchProject: teacher
-              .researchInterest, // Using research interest as project for list
-          email: teacher.email,
-        );
-      }).toList();
-
       if (mounted) {
         setState(() {
-          _facultyList = facultyList;
+          _proposals = proposals;
           _isLoading = false;
         });
         _fadeController.forward();
@@ -80,15 +67,19 @@ class _FacultyListScreenState extends State<FacultyListScreen>
         setState(() {
           _isLoading = false;
         });
-        // Show error or empty state
       }
     }
   }
 
-  void _showFacultyDetail(Faculty faculty, {bool showForm = false}) {
-    Navigator.of(
-      context,
-    ).push(FacultyDetailRoute(faculty: faculty, initialShowForm: showForm));
+  void _showProposalDetail(Proposal proposal) {
+    Navigator.of(context).push(
+      ProposalDetailRoute(
+        proposal: proposal,
+        facultyName: proposal
+            .facultyName, // Proposal model should have this or we fetch it?
+        // Proposal model has facultyName.
+      ),
+    );
   }
 
   String _getDepartmentFullName(String code) {
@@ -163,14 +154,14 @@ class _FacultyListScreenState extends State<FacultyListScreen>
                     ),
                     // Section Title
                     SliverToBoxAdapter(child: _buildSectionTitle(isWideScreen)),
-                    // Faculty List
+                    // Proposal List
                     _isLoading
                         ? const SliverFillRemaining(
                             child: Center(child: CircularProgressIndicator()),
                           )
-                        : _facultyList.isEmpty
+                        : _proposals.isEmpty
                         ? SliverFillRemaining(child: _buildEmptyState())
-                        : _buildFacultySliver(isWideScreen, isTablet),
+                        : _buildProposalSliver(isWideScreen, isTablet),
                     // Bottom padding
                     const SliverToBoxAdapter(child: SizedBox(height: 40)),
                   ],
@@ -292,7 +283,7 @@ class _FacultyListScreenState extends State<FacultyListScreen>
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      '${_facultyList.length} Faculty Member${_facultyList.length != 1 ? 's' : ''}',
+                      '${_proposals.length} Research Proposal${_proposals.length != 1 ? 's' : ''}',
                       style: TextStyle(
                         color: deptColor,
                         fontSize: 13,
@@ -338,7 +329,7 @@ class _FacultyListScreenState extends State<FacultyListScreen>
           ),
           const SizedBox(width: 14),
           Text(
-            'Faculty Members',
+            'Research Opportunities',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
               letterSpacing: -0.3,
@@ -349,7 +340,7 @@ class _FacultyListScreenState extends State<FacultyListScreen>
     );
   }
 
-  Widget _buildFacultySliver(bool isWideScreen, bool isTablet) {
+  Widget _buildProposalSliver(bool isWideScreen, bool isTablet) {
     final horizontalPadding = isWideScreen ? 44.0 : (isTablet ? 28.0 : 16.0);
     final cardWidth = isWideScreen
         ? 380.0
@@ -363,13 +354,14 @@ class _FacultyListScreenState extends State<FacultyListScreen>
           child: Wrap(
             spacing: 16,
             runSpacing: 16,
-            children: _facultyList.map((faculty) {
+            children: _proposals.map((proposal) {
               return SizedBox(
                 width: cardWidth,
-                child: FacultyCard(
-                  faculty: faculty,
-                  onConnect: () => _showFacultyDetail(faculty, showForm: true),
-                  onTap: () => _showFacultyDetail(faculty, showForm: false),
+                child: ProposalCard(
+                  proposal: proposal,
+                  showActions: false,
+                  onInterest: () => _showProposalDetail(proposal),
+                  onTap: () => _showProposalDetail(proposal),
                 ),
               );
             }).toList(),
@@ -383,13 +375,14 @@ class _FacultyListScreenState extends State<FacultyListScreen>
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate((context, index) {
-          final faculty = _facultyList[index];
-          return FacultyCard(
-            faculty: faculty,
-            onConnect: () => _showFacultyDetail(faculty, showForm: true),
-            onTap: () => _showFacultyDetail(faculty, showForm: false),
+          final proposal = _proposals[index];
+          return ProposalCard(
+            proposal: proposal,
+            showActions: false,
+            onInterest: () => _showProposalDetail(proposal),
+            onTap: () => _showProposalDetail(proposal),
           );
-        }, childCount: _facultyList.length),
+        }, childCount: _proposals.length),
       ),
     );
   }
@@ -409,14 +402,14 @@ class _FacultyListScreenState extends State<FacultyListScreen>
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.person_search_outlined,
+                Icons.search_off_rounded,
                 size: 48,
                 color: _getDepartmentColor(widget.department).withAlpha(153),
               ),
             ),
             const SizedBox(height: 24),
             Text(
-              'No Faculty Yet',
+              'No Proposals Yet',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: AppTheme.textPrimary,
@@ -424,7 +417,7 @@ class _FacultyListScreenState extends State<FacultyListScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              'This department doesn\'t have any\nregistered faculty members yet',
+              'This department doesn\'t have any\nactive research proposals yet',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppTheme.textSecondary,
                 height: 1.5,

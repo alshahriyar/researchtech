@@ -9,6 +9,7 @@ class ProposalCard extends StatefulWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
   final VoidCallback? onTap;
+  final VoidCallback? onInterest; // Add this
 
   const ProposalCard({
     super.key,
@@ -17,6 +18,7 @@ class ProposalCard extends StatefulWidget {
     this.onEdit,
     this.onDelete,
     this.onTap,
+    this.onInterest, // Add this
   });
 
   @override
@@ -123,6 +125,55 @@ class _ProposalCardState extends State<ProposalCard> {
                 const SizedBox(height: 14),
                 _buildRequirements(),
               ],
+              if (widget.onInterest != null) ...[
+                const SizedBox(height: 16),
+                _buildConnectButton(),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConnectButton() {
+    return MouseRegion(
+      onEnter: (_) =>
+          setState(() => _isHovered = true), // Reuse hover state or add new one
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onInterest,
+        child: Container(
+          width: double.infinity,
+          height: 44,
+          decoration: BoxDecoration(
+            color: AppTheme.primary,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primary.withAlpha(50),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.handshake_outlined,
+                size: 18,
+                color: Colors.white,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Express Interest',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
             ],
           ),
         ),
